@@ -1,0 +1,27 @@
+# Compiled binaries
+*.o
+*.obj
+*.exe
+*.out
+*.app
+*.dSYM/
+
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# Executables (common names)
+main
+a.out
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Dependency directories
+vcpkg_installed/
