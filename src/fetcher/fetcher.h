@@ -19,17 +19,44 @@ namespace net = boost::asio;
 namespace ssl = boost::asio::ssl;
 using tcp = boost::asio::ip::tcp;
 
-class BinanceFetcher {
+class Fetcher {
+    public:
+        virtual ~Fetcher() = default;
+        virtual void start() = 0;
+        virtual void stop() = 0;
+
+    protected:
+        virtual void run() = 0;
+};
+
+class BinanceFetcher: public Fetcher {
     public:
         BinanceFetcher(PriceStorage& storage, Symbol symbol);
-        ~BinanceFetcher();
+        ~BinanceFetcher() override;
 
-        void start();
-        void stop();
+        void start() override;
+        void stop() override;
     
     private:
-        void run();
+        void run() override;
 
+        PriceStorage& storage_;
+        Symbol symbol_;
+        std::thread thread_;
+        std::atomic<bool> running_;
+};
+
+class CoinbaseFetcher: public Fetcher {
+    public:
+        CoinbaseFetcher(PriceStorage& storage, Symbol symbol);
+        ~CoinbaseFetcher() override;
+
+        void start() override;
+        void stop() override;
+    
+    private:
+        void run() override;
+        
         PriceStorage& storage_;
         Symbol symbol_;
         std::thread thread_;
