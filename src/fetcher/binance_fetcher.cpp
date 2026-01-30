@@ -6,7 +6,7 @@
 using json = nlohmann::json;
 
 
-BinanceFetcher::BinanceFetcher(PriceStorage& storage, const std::string& symbol)
+BinanceFetcher::BinanceFetcher(PriceStorage& storage, Symbol symbol)
     : storage_(storage), symbol_(symbol), running_(false) {
 }
 
@@ -69,7 +69,7 @@ void BinanceFetcher::run() {
             
             if (j.contains("p")) {
                 double price = std::stod(j["p"].get<std::string>());
-                storage_.updatePrice("binance", "BTC", price);
+                storage_.updatePrice(Exchange::Binance, Symbol::BTCUSDT, price);
                 std::cout << "Binance: BTC = $" << price << std::endl;
             }
             
