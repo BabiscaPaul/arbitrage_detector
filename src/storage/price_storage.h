@@ -3,12 +3,13 @@
 #include <string>
 #include <unordered_map>
 #include <mutex>
+#include "../shared/types.h"
 
 class PriceStorage {
     public:
-        void updatePrice(const std::string& exchange, const std::string& symbol, double price);
+        void updatePrice(Exchange exchange, Symbol symbol, double price);
 
-        double getPrice(const std::string& exchange, const std::string& symbol);
+        double getPrice(Exchange exchange, Symbol symbol);
     
     private:
         std::unordered_map<std::string, double> prices;

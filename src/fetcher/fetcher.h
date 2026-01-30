@@ -11,6 +11,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
 #include "storage/price_storage.h"
+#include "shared/types.h"
 
 namespace beast = boost::beast;
 namespace websocket = beast::websocket;
@@ -20,7 +21,7 @@ using tcp = boost::asio::ip::tcp;
 
 class BinanceFetcher {
     public:
-        BinanceFetcher(PriceStorage& storage, const std::string& symbol);
+        BinanceFetcher(PriceStorage& storage, Symbol symbol);
         ~BinanceFetcher();
 
         void start();
@@ -30,7 +31,7 @@ class BinanceFetcher {
         void run();
 
         PriceStorage& storage_;
-        std::string symbol_;
+        Symbol symbol_;
         std::thread thread_;
         std::atomic<bool> running_;
 };
