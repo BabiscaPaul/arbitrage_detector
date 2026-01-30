@@ -32,5 +32,5 @@ class BinanceFetcher {
         PriceStorage& storage_;
         std::string symbol_;
         std::thread thread_;
-        bool running_;
+        std::atomic<bool> running_;
 };
