@@ -21,6 +21,7 @@ set(SOURCES
     src/main.cpp
     src/storage/price_storage.cpp
     src/fetcher/binance_fetcher.cpp
+    src/fetcher/coinbase_fetcher.cpp
 )
 
 # Create executable
