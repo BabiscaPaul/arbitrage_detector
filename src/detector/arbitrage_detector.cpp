@@ -23,8 +23,7 @@ void ArbitrageDetector::onPriceUpdate(Exchange exc, Symbol sym, double price) {
 
     if (other_price < 0) return; // other exc has not reported yet
 
-    double buy_price = std::min(price, other_price);
-    double sell_price = std::max(price, other_price);
+    double buy_price, sell_price;
 
     Exchange buy_exc, sell_exc;
 
@@ -40,7 +39,7 @@ void ArbitrageDetector::onPriceUpdate(Exchange exc, Symbol sym, double price) {
         sell_price = price;
     }
 
-    double spread = ((sell_price) / buy_price) * 100;
+    double spread = ((sell_price - buy_price) / buy_price) * 100.0;
     double net_spread = spread - config::getFee(buy_exc) - config::getFee(sell_exc);
 
     if (net_spread > config::MIN_SPREAD_THRESHOLD) {
