@@ -77,7 +77,8 @@ void CoinbaseFetcher::run() {
             
             if (j.contains("type") && j["type"] == "match" && j.contains("price")) {
                 double price = std::stod(j["price"].get<std::string>());
-                storage_.updatePrice(Exchange::Coinbase, symbol_, price);
+                Price int_price = Price::fromDouble(price);
+                storage_.updatePrice(Exchange::Coinbase, symbol_, int_price);
                 std::cout << "Coinbase: BTC = $" << price << std::endl;
             }
             

@@ -69,7 +69,8 @@ void BinanceFetcher::run() {
             
             if (j.contains("p")) {
                 double price = std::stod(j["p"].get<std::string>());
-                storage_.updatePrice(Exchange::Binance, Symbol::BTCUSDT, price);
+                Price int_price = Price::fromDouble(price);
+                storage_.updatePrice(Exchange::Binance, Symbol::BTCUSDT, int_price);
                 std::cout << "Binance: BTC = $" << price << std::endl;
             }
             

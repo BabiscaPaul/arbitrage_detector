@@ -4,7 +4,7 @@
 class ArbitrageDetector {
     public:
         ArbitrageDetector(PriceStorage& storage);
-        void onPriceUpdate(Exchange exc, Symbol sym, double price);
+    void onPriceUpdate(Exchange exc, Symbol sym, Price price);
 
     private:
         PriceStorage& storage_;
