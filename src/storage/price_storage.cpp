@@ -1,6 +1,8 @@
 #include "price_storage.h"
+#include "../shared/types.h"
+#include <optional>
 
-void PriceStorage::updatePrice(Exchange exchange, Symbol symbol, double price) {
+void PriceStorage::updatePrice(Exchange exchange, Symbol symbol, Price price) {
     {
         std::lock_guard<std::mutex> lock(mutex_);
 
@@ -8,7 +10,7 @@ void PriceStorage::updatePrice(Exchange exchange, Symbol symbol, double price) {
         std::string string_symbol = to_string(symbol);
 
         std::string key = string_exchange + ':' + string_symbol;
-        prices[key] = price;
+        prices.insert({key, price});
     }
 
     for (const auto& func: subscribers_) {
@@ -16,7 +18,7 @@ void PriceStorage::updatePrice(Exchange exchange, Symbol symbol, double price) {
     }
 }
 
-double PriceStorage::getPrice(Exchange exchange, Symbol symbol) {
+std::optional<Price> PriceStorage::getPrice(Exchange exchange, Symbol symbol) {
     std::lock_guard<std::mutex> lock(mutex_);
 
     std::string string_exchange = to_string(exchange);
@@ -29,7 +31,7 @@ double PriceStorage::getPrice(Exchange exchange, Symbol symbol) {
         return it->second;
     }
 
-    return -1.0;
+    return std::nullopt;
 }
 
 void PriceStorage::subscribe(PriceCallback callback) {

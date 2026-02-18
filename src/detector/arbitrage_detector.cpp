@@ -1,14 +1,18 @@
 #include "arbitrage_detector.h"
 #include "../shared/config.h"
+#include <functional>
 #include <iostream>
 
 ArbitrageDetector::ArbitrageDetector(PriceStorage& storage) : storage_(storage) {
-    storage_.subscribe([this](Exchange exc, Symbol sym, double price) {
-        this->onPriceUpdate(exc, sym, price);
-    });
+    storage_.subscribe(
+        std::bind(&ArbitrageDetector::onPriceUpdate, this,
+                std::placeholders::_1,
+                std::placeholders::_2,
+                std::placeholders::_3)
+    );
 }
 
-void ArbitrageDetector::onPriceUpdate(Exchange exc, Symbol sym, double price) {
+void ArbitrageDetector::onPriceUpdate(Exchange exc, Symbol sym, Price price) {
     /*
         1. Get the price from the OTHER exchange for the same symbol
         - If the other exchange has no price yet (returns -1.0), bail out — can't compare
@@ -19,33 +23,32 @@ void ArbitrageDetector::onPriceUpdate(Exchange exc, Symbol sym, double price) {
     */
     
     Exchange other_exc = (exc == Exchange::Binance) ? Exchange::Coinbase : Exchange::Binance;
-    double other_price = storage_.getPrice(other_exc, sym);
+    auto other_price {storage_.getPrice(other_exc, sym) };
+    if (!other_price.has_value()) return;
 
-    if (other_price < 0) return; // other exc has not reported yet
-
-    double buy_price, sell_price;
+    Price buy_price{0}, sell_price{0};
 
     Exchange buy_exc, sell_exc;
 
-    if (price < other_price) {
+    if (price < *other_price) {
         buy_exc = exc;          
         sell_exc = other_exc;
         buy_price = price;  
-        sell_price = other_price;
+        sell_price = *other_price; // other value is optional => deref it
     } else {
         buy_exc = other_exc;    
         sell_exc = exc;
-        buy_price = other_price;  
+        buy_price = *other_price;  
         sell_price = price;
     }
 
-    double spread = ((sell_price - buy_price) / buy_price) * 100.0;
+    double spread = ((sell_price.toDouble() - buy_price.toDouble()) / buy_price.toDouble()) * 100.0;
     double net_spread = spread - config::getFee(buy_exc) - config::getFee(sell_exc);
 
     if (net_spread > config::MIN_SPREAD_THRESHOLD) {
         std::cout << "ARBITRAGE: Buy " << to_string(sym) << " on " << to_string(buy_exc)
-        << " ($" << buy_price << ") → Sell on " << to_string(sell_exc)
-        << " ($" << sell_price << ") | Net spread: " << net_spread << "%"
+        << " ($" << buy_price.toDouble() << ") → Sell on " << to_string(sell_exc)
+        << " ($" << sell_price.toDouble() << ") | Net spread: " << net_spread << "%"
         << std::endl;
     }
 }
