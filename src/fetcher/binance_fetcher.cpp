@@ -36,13 +36,13 @@ void BinanceFetcher::run() {
         ctx.set_default_verify_paths();
         
         tcp::resolver resolver(ioc);
-        websocket::stream<ssl::stream<tcp::socket>> ws(ioc, ctx);
+        websocket::stream<ssl::stream<beast::tcp_stream>> ws(ioc, ctx);
         
         auto const results = resolver.resolve("stream.binance.com", "9443");
         
         // setp 1: connect tcp
-        auto ep = net::connect(beast::get_lowest_layer(ws), results);
-        
+        beast::get_lowest_layer(ws).connect(results);
+
         if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), "stream.binance.com")) {
             throw beast::system_error(
                 beast::error_code(static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()),
@@ -56,13 +56,23 @@ void BinanceFetcher::run() {
         
         // step 3: websocket handshake 
         ws.handshake(host, "/ws/btcusdt@trade");
-        
+
+        beast::get_lowest_layer(ws).expires_after(std::chrono::seconds(5));
+
         std::cout << "Connected to Binance!" << std::endl;
         
         beast::flat_buffer buffer;
         
         while (running_) {
-            ws.read(buffer);
+            beast::error_code ec;
+            ws.read(buffer, ec);
+
+            if (ec == beast::error::timeout) continue;
+
+            if (ec) {
+                std::cerr << "Binance read error: " + ec.message() << std::endl;
+                break;
+            }
             
             std::string message = beast::buffers_to_string(buffer.data());
             json j = json::parse(message);
