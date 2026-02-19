@@ -1,16 +1,8 @@
 #include "arbitrage_detector.h"
 #include "../shared/config.h"
-#include <functional>
 #include <iostream>
 
-ArbitrageDetector::ArbitrageDetector(PriceStorage& storage) : storage_(storage) {
-    storage_.subscribe(
-        std::bind(&ArbitrageDetector::onPriceUpdate, this,
-                std::placeholders::_1,
-                std::placeholders::_2,
-                std::placeholders::_3)
-    );
-}
+ArbitrageDetector::ArbitrageDetector(PriceStorage& storage) : storage_(storage) {}
 
 void ArbitrageDetector::onPriceUpdate(Exchange exc, Symbol sym, Price price) {
     /*
