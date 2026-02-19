@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
-#include <unordered_map>
+#include <array>
+#include <cstddef>
+#include <optional>
 #include <mutex>
 #include <vector>
 #include <functional>
@@ -16,7 +17,7 @@ class PriceStorage {
         void subscribe(PriceCallback callback);
     
     private:
-        std::unordered_map<std::string, Price> prices;
+        std::array<std::optional<Price>, static_cast<size_t>(Exchange::COUNT) * static_cast<size_t>(Symbol::COUNT)> prices;
         std::mutex mutex_;
         std::vector<PriceCallback> subscribers_;
 }; 
