@@ -34,14 +34,14 @@ void CoinbaseFetcher::run() {
         ctx.set_default_verify_paths();
         
         tcp::resolver resolver(ioc);
-        websocket::stream<ssl::stream<tcp::socket>> ws(ioc, ctx);
-        
+        websocket::stream < ssl::stream <beast::tcp_stream>> ws(ioc, ctx);
+
         // resolve host
         auto const results = resolver.resolve("ws-feed.exchange.coinbase.com", "443");
         
         // TCP connect
-        auto ep = net::connect(beast::get_lowest_layer(ws), results);
-        
+        beast::get_lowest_layer(ws).connect(results);
+
         if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), 
                                     "ws-feed.exchange.coinbase.com")) {
             throw beast::system_error(
@@ -56,7 +56,9 @@ void CoinbaseFetcher::run() {
         // WS handshake
         std::string host = "ws-feed.exchange.coinbase.com";
         ws.handshake(host, "/");
-        
+
+        beast::get_lowest_layer(ws).expires_after(std::chrono::seconds(5));
+
         std::cout << "Connected to Coinbase!" << std::endl;
         
         // send subscription message (key difference between binance and coinbase)
@@ -70,7 +72,15 @@ void CoinbaseFetcher::run() {
         beast::flat_buffer buffer;
         
         while (running_) {
-            ws.read(buffer);
+            beast::error_code ec;
+            ws.read(buffer, ec);
+
+            if (ec == beast::error::timeout) continue;
+
+            if (ec) {
+                std::cerr << "Coinbase read error: " + ec.message() << std::endl;
+                break;
+            }
             
             std::string message = beast::buffers_to_string(buffer.data());
             json j = json::parse(message);
