@@ -3,8 +3,12 @@
 #include <string>
 #include <chrono>
 
-enum class Symbol { BTCUSDT, BTCUSD };
-enum class Exchange { Binance, Coinbase };
+enum class Symbol { BTCUSDT, BTCUSD, COUNT };
+enum class Exchange { Binance, Coinbase, COUNT };
+
+constexpr size_t getPriceIndex(Exchange exc, Symbol sym) {
+    return static_cast<size_t>(exc) * static_cast<size_t>(Symbol::COUNT) + static_cast<size_t>(sym);
+}
 
 class Price {
     int64_t value;
