@@ -24,5 +24,10 @@ std::optional<Price> PriceStorage::getPrice(Exchange exchange, Symbol symbol) {
 }
 
 void PriceStorage::subscribe(PriceCallback callback) {
+    if (frozen) return;
     subscribers_.push_back(callback);
+}
+
+void PriceStorage::freeze() {
+    frozen = true;
 }

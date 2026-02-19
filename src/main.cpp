@@ -9,13 +9,15 @@
 int main() {
     PriceStorage storage;
     ArbitrageDetector arbitrageDetector(storage);
-    
+
     storage.subscribe(
         std::bind(&ArbitrageDetector::onPriceUpdate, &arbitrageDetector,
                             std::placeholders::_1,
                             std::placeholders::_2,
                             std::placeholders::_3)
     );
+
+    storage.freeze();
     
     BinanceFetcher binance_fetcher(storage, Symbol::BTCUSDT);
     CoinbaseFetcher coinbase_fetcher(storage, Symbol::BTCUSDT);  

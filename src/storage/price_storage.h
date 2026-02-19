@@ -15,9 +15,12 @@ class PriceStorage {
         void updatePrice(Exchange exchange, Symbol symbol, Price price);
         std::optional<Price> getPrice(Exchange exchange, Symbol symbol);
         void subscribe(PriceCallback callback);
-    
+        void freeze();
+
     private:
         std::array<std::optional<Price>, static_cast<size_t>(Exchange::COUNT) * static_cast<size_t>(Symbol::COUNT)> prices;
         std::mutex mutex_;
         std::vector<PriceCallback> subscribers_;
+
+        bool frozen = false;
 }; 
